@@ -106,7 +106,7 @@ void HandyCipher::encryptCoreCipher() {
 	bool flip=false;
 	cipher_text = "";
 	int lastciphersize=0;
-	for(int i = 0; i < plain_text.size();i++) {
+	for(int i = 0; i < (int)plain_text.size();i++) {
 		string tmp = encryptChar(plain_text[i],flip);
 		//if the current get stuck because of the previous one, redo the previous one
 		if (tmp == "redolast") {
@@ -115,7 +115,9 @@ void HandyCipher::encryptCoreCipher() {
 		} else {
 			lastciphersize=tmp.size();
 			cipher_text += tmp;
+			last_char=plain_text[i];
 		}
+
 		flip=!flip;
 	}
 }
@@ -166,23 +168,28 @@ string HandyCipher::encryptChar(char t, bool flip) {
 	//if this num is 2^k
 	else {
 		bool found = false;
-		int tries = 200;
-		int tries2 = 500;
+//		int tries2 = 500;
 		while (!found) {
-			if (tries < 0) return string("redolast");
-			if (tries2 < 0) {
-				cout << "not able to find a way to encrypt" << endl;
-				exit(0);
-			}
+//			if (tries2 < 0) {
+//				cout << "not able to find a way to encrypt" << endl;
+//				exit(0);
+//			}
 			line_choice = rand()%5;
 			while(line_choice == last_line) line_choice  = rand()%5;
 			r="";
-			for(int i = 0,numtmp=num;numtmp;++i,numtmp>>=1)
-				if (numtmp&1) r+= flip ? lines[line_choice][4-i] : lines[line_choice][i];
+			int i = 0;
+			for(int numtmp=num;numtmp;++i,numtmp>>=1)
+				if (numtmp&1) break;
+			r = flip ? lines[line_choice][4-i] : lines[line_choice][i];
 
 			//if last char is 2^k
 			if (last_char_2_k) {
-				--tries2;
+				//--tries2;
+				//No way to encrypt
+				if (char_position_mapping[t] * char_position_mapping[last_char] == 16) {
+					cout << "not able to find a way to encrypt" << endl;
+					exit(0);
+				}
 				if (!co_line(last_cipher,r[0])){
 					found = true;
 					last_cipher=r.back();
@@ -192,7 +199,8 @@ string HandyCipher::encryptChar(char t, bool flip) {
 			}
 			//if last char is not 2^k
 			else {
-				--tries;
+				//This cipher always land on the previous cipher line, so need redo the previous
+				if ((!flip && (i+5==last_line)) ||(flip && (9-i==last_line))) return "redolast";
 				if (last_line < 0 ||
 						!std::any_of(lines[last_line].begin(),lines[last_line].end(),[=](char t1) {return t1 == r[0];})) {
 					found = true;
@@ -265,7 +273,7 @@ void HandyCipher::decriptCoreCipher() {
 	plain_text="";
 	int current_position = 0;
 	bool flip = false;
-	while (current_position < cipher_text.size()) {
+	while (current_position < (int)cipher_text.size()) {
 		for (int i = 5; i >0;--i) {
 			string key = cipher_text.substr(current_position,i);
 			sort(key.begin(),key.end());

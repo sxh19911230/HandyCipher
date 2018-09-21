@@ -62,6 +62,7 @@ private:
 	unordered_map<char,int> char_position_mapping;
 	unordered_map<int,char> position_char_mapping;
 	//helper data
+	char last_char{};
 	int last_line{-1};
 	char last_cipher{0};
 	bool last_char_2_k {false};
