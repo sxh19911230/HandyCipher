@@ -13,7 +13,6 @@
 
 #include "HandyCipher.h"
 
-// random generator function:
 int myrandom (int i) { return std::rand()%i;}
 
 HandyCipher::HandyCipher() {}
@@ -100,7 +99,7 @@ void HandyCipher::setKey(string k) {
 }
 
 
-void HandyCipher::encryptCoreCipher() {
+void HandyCipher::encryptCore() {
 	srand(time(NULL));
 
 	bool flip=false;
@@ -137,7 +136,6 @@ string HandyCipher::encryptChar(char t, bool flip) {
 			line_choice = rand()%20;
 			while(line_choice == last_line) line_choice  = rand()%20;
 
-			//generate it
 			r= "";
 			for(int i = 0,numtmp = num;numtmp;++i,numtmp>>=1)
 				if (numtmp&1) r+= flip ? lines[line_choice][4-i] : lines[line_choice][i];
@@ -168,12 +166,8 @@ string HandyCipher::encryptChar(char t, bool flip) {
 	//if this num is 2^k
 	else {
 		bool found = false;
-//		int tries2 = 500;
 		while (!found) {
-//			if (tries2 < 0) {
-//				cout << "not able to find a way to encrypt" << endl;
-//				exit(0);
-//			}
+
 			line_choice = rand()%5;
 			while(line_choice == last_line) line_choice  = rand()%5;
 			r="";
@@ -184,7 +178,6 @@ string HandyCipher::encryptChar(char t, bool flip) {
 
 			//if last char is 2^k
 			if (last_char_2_k) {
-				//--tries2;
 				//No way to encrypt
 				if (char_position_mapping[t] * char_position_mapping[last_char] == 16) {
 					cout << "not able to find a way to encrypt" << endl;
@@ -269,7 +262,7 @@ void HandyCipher::decrypt_init() {
 	}
 }
 
-void HandyCipher::decriptCoreCipher() {
+void HandyCipher::decriptCore() {
 	plain_text="";
 	int current_position = 0;
 	bool flip = false;

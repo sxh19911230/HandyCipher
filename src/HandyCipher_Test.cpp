@@ -28,12 +28,12 @@ int main() {
 	hc.print_plain();
 	cout << endl;
 	//cout << "\nstop1" << endl;
-	hc.encryptCoreCipher();
+	hc.encryptCore();
 	hc.print_cipher();
 	cout << endl;
 	hc.decrypt_init();
 	//cout << "\nstop2" << endl;
-	hc.decriptCoreCipher();
+	hc.decriptCore();
 	hc.print_plain();
 
 

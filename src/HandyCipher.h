@@ -37,8 +37,10 @@ public:
 	void setCipher(string c){cipher_text = c;}
 
 
-	void encryptCoreCipher();
-	void decriptCoreCipher();
+	void encryptCore();
+	void decriptCore();
+	void encrypt();
+	void decript();
 	void decrypt_init();
 
 
