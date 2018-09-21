@@ -9,8 +9,12 @@
 #include <iterator>
 #include <fstream>
 #include <algorithm>
+#include <ctime>
 
 #include "HandyCipher.h"
+
+// random generator function:
+int myrandom (int i) { return std::rand()%i;}
 
 HandyCipher::HandyCipher() {}
 
@@ -25,7 +29,8 @@ void HandyCipher::initMatrixAndMapping() {
 			key_matrix[i].push_back(tmp[i*8+j]);
 	}
 	int k=0;
-	for (auto i = key.begin();i!=key.end();++i) key_mapping[*i]=k++;
+	for (auto i = key.begin();i!=key.end();++i)
+		if ('0' > *i || *i > '9' )key_mapping[*i]=k++;
 }
 
 void HandyCipher::printKeyMatrix() const {
@@ -59,8 +64,9 @@ string HandyCipher::loadKey(string filename) {
 }
 
 string HandyCipher::generateKey() {
+	srand(time(NULL));
 	string char_set="ABCDEFGHIJKLMNOPQRSTUVWXYZ,.-? 0123456789";
-	std::random_shuffle ( char_set.begin(), char_set.end());
+	std::random_shuffle ( char_set.begin(), char_set.end(),myrandom);
 	return char_set;
 }
 
@@ -72,15 +78,21 @@ void HandyCipher::setKey(string k) {
 
 
 void HandyCipher::encryptCoreCipher() {
+	srand(time(NULL));
+
 
 }
 
 string HandyCipher::encryptChar(char t) {
-	int bin = key_mapping[t];
-
+	int num = key_mapping[t];
 	return "";
 }
 
 void HandyCipher::decriptCoreCipher() {
+
+}
+
+void HandyCipher::choose_line() {
+	int i = rand() % 20;
 
 }

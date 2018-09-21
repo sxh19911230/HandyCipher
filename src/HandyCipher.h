@@ -46,9 +46,7 @@ private:
 	//helper functions
 	void initMatrixAndMapping();
 	string encryptChar(char);
-
-	//random
-
+	void choose_line();
 
 	//data
 	string plain_text;
@@ -56,6 +54,9 @@ private:
 	string key;
 	vector<vector<char>> key_matrix;
 	unordered_map<char,int> key_mapping;
+	//helper data
+	int last_line;
+	int choosen_line[5];
 };
 
 #endif /* HANDYCIPHER_H_ */
