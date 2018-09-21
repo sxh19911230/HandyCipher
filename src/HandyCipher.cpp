@@ -18,7 +18,6 @@ int myrandom (int i) { return std::rand()%i;}
 
 HandyCipher::HandyCipher() {}
 
-
 void HandyCipher::initMatrixAndMapping() {
 	string tmp;
 	copy_if(key.begin(),key.end(),back_inserter(tmp), [](char t){return t!=' ';});
@@ -28,25 +27,28 @@ void HandyCipher::initMatrixAndMapping() {
 		for (int j = 0; j < 8; ++j)
 			key_matrix[i].push_back(tmp[i*8+j]);
 	}
-	int k=0;
+	int k=1;
 	for (auto i = key.begin();i!=key.end();++i)
-		if ('0' > *i || *i > '9' )key_mapping[*i]=k++;
+		if ('0' > *i || *i > '9' ) {
+			char_position_mapping[*i]=k;
+			position_char_mapping[k] =*i;
+			++k;
+		}
 
 	for (int i = 0; i < 20; ++i) {
-		//column
-		if (i < 5)
-			for (int j = 0; j < 5; ++j)
-				lines[i].push_back( key_matrix[i][j]);
-		else if (i < 10)
-			for (int j = 0; j < 5; ++j)
-				lines[i].push_back( key_matrix[j][i-5]);
-		else if (i < 15)
-			for (int j = 0; j < 5; ++j)
-				lines[i].push_back( key_matrix[j][(j+i)%5]);
-		else if (i < 20)
-			for (int j = 0; j < 5; ++j)
-				lines[i].push_back( key_matrix[j][(i-j)%5]);
-	}
+				if (i < 5)
+					for (int j = 0; j < 5; ++j)
+						lines[i].push_back( key_matrix[j][i]);
+				else if (i < 10)
+					for (int j = 0; j < 5; ++j)
+						lines[i].push_back( key_matrix[i-5][j]);
+				else if (i < 15)
+					for (int j = 0; j < 5; ++j)
+						lines[i].push_back( key_matrix[j][(j+i)%5]);
+				else if (i < 20)
+					for (int j = 0; j < 5; ++j)
+						lines[i].push_back( key_matrix[j][(i-j)%5]);
+			}
 
 }
 
@@ -100,16 +102,26 @@ void HandyCipher::setKey(string k) {
 
 void HandyCipher::encryptCoreCipher() {
 	srand(time(NULL));
+
 	bool flip=false;
 	cipher_text = "";
-	for(char c : plain_text) {
-		cipher_text += encryptChar(c,flip);
+	int lastciphersize=0;
+	for(int i = 0; i < plain_text.size();i++) {
+		string tmp = encryptChar(plain_text[i],flip);
+		//if the current get stuck because of the previous one, redo the previous one
+		if (tmp == "redolast") {
+			i-=2;
+			cipher_text = cipher_text.substr(0,cipher_text.size()-lastciphersize);
+		} else {
+			lastciphersize=tmp.size();
+			cipher_text += tmp;
+		}
 		flip=!flip;
 	}
 }
 
 string HandyCipher::encryptChar(char t, bool flip) {
-	int num = key_mapping[t];
+	int num = char_position_mapping[t];
 	int line_choice;
 
 	string r;
@@ -154,7 +166,14 @@ string HandyCipher::encryptChar(char t, bool flip) {
 	//if this num is 2^k
 	else {
 		bool found = false;
+		int tries = 200;
+		int tries2 = 500;
 		while (!found) {
+			if (tries < 0) return string("redolast");
+			if (tries2 < 0) {
+				cout << "not able to find a way to encrypt" << endl;
+				exit(0);
+			}
 			line_choice = rand()%5;
 			while(line_choice == last_line) line_choice  = rand()%5;
 			r="";
@@ -163,6 +182,7 @@ string HandyCipher::encryptChar(char t, bool flip) {
 
 			//if last char is 2^k
 			if (last_char_2_k) {
+				--tries2;
 				if (!co_line(last_cipher,r[0])){
 					found = true;
 					last_cipher=r.back();
@@ -172,6 +192,7 @@ string HandyCipher::encryptChar(char t, bool flip) {
 			}
 			//if last char is not 2^k
 			else {
+				--tries;
 				if (last_line < 0 ||
 						!std::any_of(lines[last_line].begin(),lines[last_line].end(),[=](char t1) {return t1 == r[0];})) {
 					found = true;
@@ -186,9 +207,7 @@ string HandyCipher::encryptChar(char t, bool flip) {
 	return r;
 }
 
-void HandyCipher::decriptCoreCipher() {
 
-}
 
 void HandyCipher::print_cipher() const {
 	cout << cipher_text;
@@ -199,7 +218,7 @@ void HandyCipher::print_plain() const {
 }
 
 void HandyCipher::print_char_position_mapping() const {
-	for(auto i = key_mapping.begin(); i!= key_mapping.end();++i) cout << i->first << ": " << i->second << '\n';
+	for(auto i = char_position_mapping.begin(); i!= char_position_mapping.end();++i) cout << i->first << ": " << i->second << '\n';
 }
 
 bool HandyCipher::co_line(char a, char b) {
@@ -207,4 +226,55 @@ bool HandyCipher::co_line(char a, char b) {
 		if (std::any_of(l.begin(),l.end(),[=](char t1) {return t1 == a;}) && std::any_of(l.begin(),l.end(),[=](char t1) {return t1 == b;}))
 			return true;
 	return false;
+}
+
+void HandyCipher::print_key_analyze() {
+	cout << position_char_mapping[1] << " and " << position_char_mapping[16] << " cannot be adjacent\n"
+			<< position_char_mapping[2] << " and " << position_char_mapping[8] << " cannot be adjacent\n"
+			<< position_char_mapping[4] << " cannot appear in a row" << endl;
+}
+
+void HandyCipher::setPlainText(string p) {
+	plain_text=p;
+	std::transform(plain_text.begin(),plain_text.end(),plain_text.begin(),::toupper);
+}
+
+
+
+void HandyCipher::decrypt_init() {
+	for (auto cp :char_position_mapping) {
+		int position = cp.second;
+		char c = cp.first;
+		for (int line_num = 0; line_num < 20; ++line_num) {
+			if (line_num >4 && !(position & (position-1))) break;
+			string r= "",rf="";
+			for(int i = 0,numtmp = position;numtmp;++i,numtmp>>=1)
+				if (numtmp&1) {
+					r+= lines[line_num][i];
+					rf+=lines[line_num][4-i];
+				}
+			std::sort(r.begin(),r.end());
+			std::sort(rf.begin(),rf.end());
+			key_char_mapping[0][r] = c;
+			key_char_mapping[1][rf] = c;
+		}
+	}
+}
+
+void HandyCipher::decriptCoreCipher() {
+	plain_text="";
+	int current_position = 0;
+	bool flip = false;
+	while (current_position < cipher_text.size()) {
+		for (int i = 5; i >0;--i) {
+			string key = cipher_text.substr(current_position,i);
+			sort(key.begin(),key.end());
+			if (key_char_mapping[flip].count(key)){
+				plain_text+=key_char_mapping[flip].at(key);
+				current_position+=i;
+				flip=!flip;
+				break;
+			}
+		}
+	}
 }

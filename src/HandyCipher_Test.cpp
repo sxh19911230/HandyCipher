@@ -20,14 +20,22 @@ int main() {
 	//cout << tmpkey << endl;
 	HandyCipher hc{};
 	hc.setKey(tmpkey);
+	//hc.print_key_analyze();
 	//hc.printKeyMatrix();
 	//hc.printLines();
 	//hc.print_char_position_mapping();
-	hc.setPlainText("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	hc.setPlainText("ABCDEFGHIJKLMNOPQRSTUVWXYZakljdhfocqiwhefnpoiqwpncfoiqjwoeifncjqwdf");
 	hc.print_plain();
-	cout << '\n';
+	cout << endl;
+	//cout << "\nstop1" << endl;
 	hc.encryptCoreCipher();
 	hc.print_cipher();
+	cout << endl;
+	hc.decrypt_init();
+	//cout << "\nstop2" << endl;
+	hc.decriptCoreCipher();
+	hc.print_plain();
+
 
 	return 0;
 }
