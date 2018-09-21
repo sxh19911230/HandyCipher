@@ -20,6 +20,10 @@ public:
 	HandyCipher();
 
 	void printKeyMatrix() const;
+	void printLines() const;
+	void print_cipher() const;
+	void print_plain() const;
+	void print_char_position_mapping() const;
 
 	void setKey(string k);
 	string getKey() const { return key;}
@@ -45,8 +49,8 @@ public:
 private:
 	//helper functions
 	void initMatrixAndMapping();
-	string encryptChar(char);
-	void choose_line();
+	string encryptChar(char,bool);
+	bool co_line(char a, char b);
 
 	//data
 	string plain_text;
@@ -55,8 +59,11 @@ private:
 	vector<vector<char>> key_matrix;
 	unordered_map<char,int> key_mapping;
 	//helper data
-	int last_line;
-	int choosen_line[5];
+	int last_line{-1};
+	char last_cipher{0};
+	bool last_char_2_k {false};
+
+	string lines[20];
 };
 
 #endif /* HANDYCIPHER_H_ */
