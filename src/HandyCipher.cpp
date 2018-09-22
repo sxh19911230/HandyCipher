@@ -25,8 +25,10 @@ HandyCipher::HandyCipher() {}
 void HandyCipher::initMatrixAndMapping() {
 	string tmp;
 	copy_if(key.begin(),key.end(),back_inserter(tmp), [](char t){return t!=' ';});
-	key_matrix.clear();
+
 	//matrix
+	key_matrix.clear();
+	null_set.clear();
 	for (int i = 0; i < 5; ++i) {
 		key_matrix.push_back(vector<char>{});
 		for (int j = 0; j < 8; ++j) {
@@ -36,6 +38,8 @@ void HandyCipher::initMatrixAndMapping() {
 		}
 	}
 	// char position mapping
+	char_position_mapping.clear();
+	position_char_mapping.clear();
 	int k=1;
 	for (auto i = key.begin();i!=key.end();++i)
 		if ('0' > *i || *i > '9' ) {
@@ -45,6 +49,8 @@ void HandyCipher::initMatrixAndMapping() {
 		}
 
 	//line map
+	for (int i = 0; i < 20; ++i) lines[i].clear();
+
 	for (int i = 0; i < 20; ++i) {
 		//column
 		if (i < 5)
@@ -250,7 +256,7 @@ bool HandyCipher::encrypt() {
 bool HandyCipher::decrypt() {
 	decrypt_init();
 	null_char_remove();
-	return decriptCore();
+	return decryptCore();
 }
 
 void HandyCipher::null_char_insert() {
@@ -305,6 +311,8 @@ void HandyCipher::setPlainText(string p) {
 
 
 void HandyCipher::decrypt_init() {
+	key_char_mapping[0].clear();
+	key_char_mapping[1].clear();
 	for (auto cp :char_position_mapping) {
 		int position = cp.second;
 		char c = cp.first;
@@ -325,7 +333,7 @@ void HandyCipher::decrypt_init() {
 	}
 }
 
-bool HandyCipher::decriptCore() {
+bool HandyCipher::decryptCore() {
 	plain_text="";
 	int current_position = 0;
 	bool flip = true;

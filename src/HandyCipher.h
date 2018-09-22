@@ -32,15 +32,11 @@ public:
 	const string& get_cipher() const;
 	const string& get_plain() const;
 
-
-
-
-
 	bool encryptCore();
 	void null_char_insert();
 	bool encrypt();
 
-	bool decriptCore();
+	bool decryptCore();
 	void null_char_remove();
 	bool decrypt();
 
