@@ -10,10 +10,15 @@
 #include <fstream>
 #include <algorithm>
 #include <ctime>
+#include <bitset>
+#include <list>
 
 #include "HandyCipher.h"
 
 int myrandom (int i) { return std::rand()%i;}
+
+struct RedoLast{};
+struct NotDoable{};
 
 HandyCipher::HandyCipher() {}
 
@@ -21,11 +26,16 @@ void HandyCipher::initMatrixAndMapping() {
 	string tmp;
 	copy_if(key.begin(),key.end(),back_inserter(tmp), [](char t){return t!=' ';});
 	key_matrix.clear();
+	//matrix
 	for (int i = 0; i < 5; ++i) {
 		key_matrix.push_back(vector<char>{});
-		for (int j = 0; j < 8; ++j)
+		for (int j = 0; j < 8; ++j) {
 			key_matrix[i].push_back(tmp[i*8+j]);
+			//null characters set
+			if (j>=5) null_set.push_back(tmp[i*8+j]);
+		}
 	}
+	// char position mapping
 	int k=1;
 	for (auto i = key.begin();i!=key.end();++i)
 		if ('0' > *i || *i > '9' ) {
@@ -34,20 +44,24 @@ void HandyCipher::initMatrixAndMapping() {
 			++k;
 		}
 
+	//line map
 	for (int i = 0; i < 20; ++i) {
-				if (i < 5)
-					for (int j = 0; j < 5; ++j)
-						lines[i].push_back( key_matrix[j][i]);
-				else if (i < 10)
-					for (int j = 0; j < 5; ++j)
-						lines[i].push_back( key_matrix[i-5][j]);
-				else if (i < 15)
-					for (int j = 0; j < 5; ++j)
-						lines[i].push_back( key_matrix[j][(j+i)%5]);
-				else if (i < 20)
-					for (int j = 0; j < 5; ++j)
-						lines[i].push_back( key_matrix[j][(i-j)%5]);
-			}
+		//column
+		if (i < 5)
+			for (int j = 0; j < 5; ++j)
+				lines[i].push_back( key_matrix[j][i]);
+		//row
+		else if (i < 10)
+			for (int j = 0; j < 5; ++j)
+				lines[i].push_back( key_matrix[i-5][j]);
+		//dia
+		else if (i < 15)
+			for (int j = 0; j < 5; ++j)
+				lines[i].push_back( key_matrix[j][(j+i)%5]);
+		else if (i < 20)
+			for (int j = 0; j < 5; ++j)
+				lines[i].push_back( key_matrix[j][(i-j)%5]);
+	}
 
 }
 
@@ -99,26 +113,30 @@ void HandyCipher::setKey(string k) {
 }
 
 
-void HandyCipher::encryptCore() {
+bool HandyCipher::encryptCore() {
 	srand(time(NULL));
 
-	bool flip=false;
+	bool flip=true;
 	cipher_text = "";
 	int lastciphersize=0;
 	for(int i = 0; i < (int)plain_text.size();i++) {
-		string tmp = encryptChar(plain_text[i],flip);
-		//if the current get stuck because of the previous one, redo the previous one
-		if (tmp == "redolast") {
-			i-=2;
-			cipher_text = cipher_text.substr(0,cipher_text.size()-lastciphersize);
-		} else {
+
+		try {
+			string tmp = encryptChar(plain_text[i],flip);
 			lastciphersize=tmp.size();
 			cipher_text += tmp;
 			last_char=plain_text[i];
-		}
 
-		flip=!flip;
+
+			flip=!flip;
+		} catch (RedoLast&) {
+			i-=2;
+			cipher_text = cipher_text.substr(0,cipher_text.size()-lastciphersize);
+		} catch (NotDoable&) {
+			return false;
+		}
 	}
+	return true;
 }
 
 string HandyCipher::encryptChar(char t, bool flip) {
@@ -180,8 +198,8 @@ string HandyCipher::encryptChar(char t, bool flip) {
 			if (last_char_2_k) {
 				//No way to encrypt
 				if (char_position_mapping[t] * char_position_mapping[last_char] == 16) {
-					cout << "not able to find a way to encrypt" << endl;
-					exit(0);
+					//cout << "not able to find a way to encrypt" << endl;
+					throw NotDoable{};
 				}
 				if (!co_line(last_cipher,r[0])){
 					found = true;
@@ -193,7 +211,8 @@ string HandyCipher::encryptChar(char t, bool flip) {
 			//if last char is not 2^k
 			else {
 				//This cipher always land on the previous cipher line, so need redo the previous
-				if ((!flip && (i+5==last_line)) ||(flip && (9-i==last_line))) return "redolast";
+				if ((!flip && (i+5==last_line)) ||(flip && (9-i==last_line))) throw RedoLast{};
+
 				if (last_line < 0 ||
 						!std::any_of(lines[last_line].begin(),lines[last_line].end(),[=](char t1) {return t1 == r[0];})) {
 					found = true;
@@ -208,18 +227,61 @@ string HandyCipher::encryptChar(char t, bool flip) {
 	return r;
 }
 
-
-
-void HandyCipher::print_cipher() const {
-	cout << cipher_text;
+const string& HandyCipher::get_cipher() const {
+	return cipher_text;
 }
 
-void HandyCipher::print_plain() const {
-	cout << plain_text;
+const string& HandyCipher::get_plain() const {
+	return plain_text;
 }
 
 void HandyCipher::print_char_position_mapping() const {
-	for(auto i = char_position_mapping.begin(); i!= char_position_mapping.end();++i) cout << i->first << ": " << i->second << '\n';
+	for(auto i = char_position_mapping.begin(); i!= char_position_mapping.end();++i) cout << i->first << ": " << i->second <<
+			' ' << bitset<5>( i->second ) <<'\n';
+}
+
+bool HandyCipher::encrypt() {
+	bool r = encryptCore();
+	if (r) null_char_insert();
+
+	return r;
+}
+
+bool HandyCipher::decrypt() {
+	decrypt_init();
+	null_char_remove();
+	return decriptCore();
+}
+
+void HandyCipher::null_char_insert() {
+	srand(time(0));
+	string tmp {move(cipher_text)};
+	double ran;
+
+	for(auto i = tmp.begin();;) {
+		ran =  (double) rand()/RAND_MAX ;
+		if (ran < 0.625) {
+			if (i==tmp.end()) break;
+			cipher_text.push_back(*i);
+			++i;
+		} else
+			for (;;) {
+				//random char from null set
+				char c = null_set[rand()%15];
+				//used in last 5 times?
+				int pos = find(cipher_text.rbegin(),cipher_text.rbegin()+6,c) - cipher_text.rbegin();
+
+				if (rand()/RAND_MAX > (5-pos)/5.0) {
+					cipher_text.push_back(c);
+					break;
+				}
+			}
+	}
+}
+
+void HandyCipher::null_char_remove() {
+	string tmp {move(cipher_text)};
+	copy_if(tmp.begin(),tmp.end(),back_inserter(cipher_text),[this](char c){return find(null_set.begin(), null_set.end(), c) == null_set.end();});
 }
 
 bool HandyCipher::co_line(char a, char b) {
@@ -258,15 +320,17 @@ void HandyCipher::decrypt_init() {
 			std::sort(rf.begin(),rf.end());
 			key_char_mapping[0][r] = c;
 			key_char_mapping[1][rf] = c;
+			//cout << r << " : " << c << endl;
 		}
 	}
 }
 
-void HandyCipher::decriptCore() {
+bool HandyCipher::decriptCore() {
 	plain_text="";
 	int current_position = 0;
-	bool flip = false;
+	bool flip = true;
 	while (current_position < (int)cipher_text.size()) {
+		//cout << plain_text << endl;
 		for (int i = 5; i >0;--i) {
 			string key = cipher_text.substr(current_position,i);
 			sort(key.begin(),key.end());
@@ -278,4 +342,5 @@ void HandyCipher::decriptCore() {
 			}
 		}
 	}
+	return true;
 }

@@ -21,27 +21,28 @@ public:
 
 	void printKeyMatrix() const;
 	void printLines() const;
-	void print_cipher() const;
-	void print_plain() const;
 	void print_char_position_mapping() const;
 	void print_key_analyze();
 
 	void setKey(string k);
 	string getKey() const { return key;}
 
-	void setPlainText(string p);
-	string getPlainText() const {return plain_text;}
-
-	const vector<vector<char>>& getKeyMatrix() const {return key_matrix;}
-
 	void setCipher(string c){cipher_text = c;}
+	void setPlainText(string p);
+	const string& get_cipher() const;
+	const string& get_plain() const;
 
 
-	void encryptCore();
-	void decriptCore();
-	void encrypt();
-	void decript();
-	void decrypt_init();
+
+
+
+	bool encryptCore();
+	void null_char_insert();
+	bool encrypt();
+
+	bool decriptCore();
+	void null_char_remove();
+	bool decrypt();
 
 
 	static string generateKey();
@@ -54,7 +55,8 @@ private:
 	void initMatrixAndMapping();
 	string encryptChar(char,bool);
 	bool co_line(char a, char b);
-
+	void decrypt_init();
+	const vector<vector<char>>& getKeyMatrix() const {return key_matrix;}
 
 	//data
 	string plain_text;
@@ -63,6 +65,7 @@ private:
 	vector<vector<char>> key_matrix;
 	unordered_map<char,int> char_position_mapping;
 	unordered_map<int,char> position_char_mapping;
+	vector<char> null_set;
 	//helper data
 	char last_char{};
 	int last_line{-1};
