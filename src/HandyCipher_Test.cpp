@@ -14,12 +14,19 @@
 
 using namespace std;
 
+void test();
+void brute_force();
+void brute_force_test();
 
 int main() {
+	brute_force();
+}
+
+void test() {
 	HandyCipher hc{};
 	string tmpkey = "T?2IODWB4ZC,SM5LF.XPU9ARH8K -0NG376VQ1YJE";//HandyCipher::generateKey();
 	//cout << tmpkey << endl;
-	//hc.setKey(tmpkey);
+	hc.setKey(tmpkey);
 	//hc.print_key_analyze();
 	//hc.printKeyMatrix();
 	//hc.printLines();
@@ -45,4 +52,35 @@ int main() {
 	//cout << hc.get_cipher() << endl;
 	hc.decrypt();
 	cout << hc.get_plain();
+}
+
+void brute_force(){
+	string t = "FOR THE MOST PART, H";
+	string cipher = "42FB,WHZ.XWB,N9YBJ563XUM5HNMWUCHLJCBW,X?YW4MNE4F6,84EMJ85YBHK9B?5JN9UN.ZHEYH?4WK92.JNHYW4Z,FKH29J.MFX?UJ54";
+	HandyCipher hc{};
+	hc.setCipher(cipher);
+	string char_set=" ,-.0123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+	do {
+		hc.setKey(char_set);
+		hc.decrypt();
+		string s = hc.get_plain();
+		if (t == s.substr(0,20)) {cout << char_set;break;}
+	} while(next_permutation(char_set.begin(),char_set.end()));
+}
+
+void brute_force_test(){
+	string t = "IT HAUNTS ME, THE PA";
+
+	HandyCipher hc{};
+	hc.setCipher("Z0XSNDPR?EM-OXE8DOM1?PNZ7YZ8-G0ENUZ7TO2D1ZSCRKZPG8-VP?0S21-TDKNK?72DO148ON0?MD0NMGY1M2DP10PCRNKYN80USO78PMN24NXOUYR814E1XD8DNKT0-SYD8?X-84UG7RX0ZGX1?MY1?NKUMXGRGO0D8U0TM2K?MZXCSZ107OP?D7GPGM?107P0?EKP102OP?28TZK8VDZNMTUXK-RGPVOSP?VNTYDS4OCGY7PS2YOZUPG4PG-0ZXUTYMTECX14-0U2-O?T8XTPMY?RY2S?0KP10E?VNYD1R7VYZG81GPRN02M-E41O40DCX7PM2DNY-TDPCV27OSX1M4SNYTMDXDN4E?SNXOZDP4?8G0TCNO82XY7S0?2SZY01ZDVGXRECNZND7SO1PEYKMN8MR2X0ST1CPO8S20R8NUZ41ZDUN8MZXR7Z1D21D?P?4RCM2-8CKENG-TV4ZK8");
+
+	string char_set="ON2TP3FLDSMKY,5ACVER7WIH41UG8.960 ?-ZXQJB";
+
+	do {
+		hc.setKey(char_set);
+		hc.decrypt();
+		string s = hc.get_plain();
+		if (t == s.substr(0,20)) {cout << char_set;break;}
+	} while(next_permutation(char_set.begin(),char_set.end()));
 }
