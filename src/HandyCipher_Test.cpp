@@ -8,18 +8,34 @@
 
 #include <iostream>
 #include <algorithm>
-
+#include <thread>
 
 #include "HandyCipher.h"
 
 using namespace std;
 
 void test();
-void brute_force();
+void brute_force(string);
 void brute_force_test();
 
 int main() {
-	brute_force();
+	string char_set=" ,-.0123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+	thread t1 {brute_force," ,-.0123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
+	thread t2 {brute_force,", -.0123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
+	thread t3 {brute_force,"- ,.0123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
+	thread t4 {brute_force,". ,-0123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
+	thread t5 {brute_force,"0 ,-.123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
+	thread t6 {brute_force,"1 ,-.023456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
+
+	t1.join();
+	t2.join();
+	t3.join();
+	t4.join();
+	t5.join();
+	t6.join();
+
+
 }
 
 void test() {
@@ -54,19 +70,20 @@ void test() {
 	cout << hc.get_plain();
 }
 
-void brute_force(){
+void brute_force(string char_set){
 	string t = "FOR THE MOST PART, H";
 	string cipher = "42FB,WHZ.XWB,N9YBJ563XUM5HNMWUCHLJCBW,X?YW4MNE4F6,84EMJ85YBHK9B?5JN9UN.ZHEYH?4WK92.JNHYW4Z,FKH29J.MFX?UJ54";
 	HandyCipher hc{};
 	hc.setCipher(cipher);
-	string char_set=" ,-.0123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
+	char d = char_set[0];
 	do {
 		hc.setKey(char_set);
 		hc.decrypt();
 		string s = hc.get_plain();
-		if (t == s.substr(0,20)) {cout << char_set;break;}
-	} while(next_permutation(char_set.begin(),char_set.end()));
+		if (t == s.substr(0,20)) {cout << "success!: "<< char_set << endl;break;}
+
+	} while(next_permutation(char_set.begin(),char_set.end()) && char_set[0] == d);
+	cout << "NOT FOUND" << endl;
 }
 
 void brute_force_test(){
