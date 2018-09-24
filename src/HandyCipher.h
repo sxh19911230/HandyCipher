@@ -36,10 +36,15 @@ public:
 	void null_char_insert();
 	bool encrypt();
 
+	void decrypt_init();
 	bool decryptCore();
 	void null_char_remove();
 	bool decrypt();
+	char decryptNextChar(int& current_position, bool& flip);
 
+	//attack
+	bool core_cipher_attack(string plain);
+	void core_cipher_attack_init(string key);
 
 	static string generateKey();
 	static void saveKey(string, string ="key.txt");
@@ -51,7 +56,7 @@ private:
 	void initMatrixAndMapping();
 	string encryptChar(char,bool);
 	bool co_line(char a, char b);
-	void decrypt_init();
+
 	const vector<vector<char>>& getKeyMatrix() const {return key_matrix;}
 
 	//data
@@ -69,7 +74,7 @@ private:
 	bool last_char_2_k {false};
 
 	unordered_map<string, char> key_char_mapping[2];
-
+public:
 	string lines[20];
 };
 

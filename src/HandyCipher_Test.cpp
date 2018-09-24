@@ -9,40 +9,54 @@
 #include <iostream>
 #include <algorithm>
 #include <thread>
+#include <future>
+#include <functional>
+#include <map>
+#include <set>
 
 #include "HandyCipher.h"
 
 using namespace std;
 
+
 void test();
-void brute_force(string);
-void brute_force_test();
+
 
 int main() {
-	string char_set=" ,-.0123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	//test();
+	HandyCipher hc{};
+	hc.setCipher("Z0XSN2S-7MR0TZR4NOM1?PNZYRXZPT8UNZXCN1VYGYC-?K7T?1X2EDSTMDKY2UNXTVMOY2?KNO14RNX0?8DUTMOS8G4NGP-GC7R1OSU2E41O4P48EK12SZ7GXK8VCOS4UKTZ17YX2TPO8X-2UG8?UX-RC7KVRXZ4V2M-P2ZOSTKZMG8EV71?EDY074KO1MZ8XNVODEUM2-8U4P0UTZKUSZCPDO1XKXC8VN412RTZM2DPRUO12MES2YOZX024PGZ1-T8?0SO720YOVNZ0X2?P-1X4P281UND2STY1C-27?TXU7VRKX8K?4NCE7D-7NVCGKRZTE7CPKCVOXSTKNDTRSOXUS8KTSO720TY4R2ZS0PSXOKY-1X2O14P8EV7SPY418D8G?YRX4P87OZECVMN7NGC1-O4DCP?2YZ0-T-K42GTRZ?12MZDU0?Z7RX4-4Y21DXNU?T4-NDREY71T-8P7K0G");
 
-	thread t1 {brute_force," ,-.0123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
-	thread t2 {brute_force,", -.0123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
-	thread t3 {brute_force,"- ,.0123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
-	thread t4 {brute_force,". ,-0123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
-	thread t5 {brute_force,"0 ,-.123456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
-	thread t6 {brute_force,"1 ,-.023456789?ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
+	//hc.core_cipher_attack_init("ON2TPDSMKYCVER741UG80?-ZX");
+	//hc.core_cipher_attack_init("PON2TYDSMK7CVER841UGX0?-Z");
+	string key = "ODC40NSV1?2MEU-TKRGZPY78X";
 
-	t1.join();
-	t2.join();
-	t3.join();
-	t4.join();
-	t5.join();
-	t6.join();
+	hc.core_cipher_attack_init(key);
+	//hc.printKeyMatrix();
+	//hc.printLines();
+	string plain = "IT HAUNTS ME, THE PASSAGE OF TIME. I THINK TIME IS A MERCILESS THING. I THINK LIFE IS A PROCESS OF BURNING ONESELF OUT AND TIME IS THE FIRE THAT BURN-S YOU. BUT I THINK THE SPIRIT OF MAN IS A GOOD ADVERSARY.  -- TENNESSEE WILLIAMS";
 
-
+	if (!hc.core_cipher_attack(plain))  cout << "no" << endl;
+	/*
+	string plain = "For the most part, however, Bucks love was expressed in adoration. While he went wild with happiness when Thornton touched him or spoke to him, he did not seek these tokens. Unlike Skeet, who was wont to shove her nose under Thorntons hand and nudge and nudge till petted, or Nig, who would stalk up and rest his great head on Thorntons knee, Buck was content to adore at a distance. He would lie by the hour, eager, alert, at Thorntons feet, looking up into his face, dwelling upon it, studying it, following with keenest interest each fleeting expression, every movement or change of feature. Or, as chance might have it, he would lie farther away, to the side or rear, watching the outlines of the man and the occasional movements of his body. And often, such was the communion in which they lived, the strength of Bucks gaze would draw John Thorntons head around, and he would return the gaze, without speech, his heart shining out of his eyes as Bucks heart shone out. -Jack London - The Call Of The Wild";
+	HandyCipher hc{};
+	hc.setPlainText(plain);
+	hc.setKey(HandyCipher::generateKey());
+	while(!hc.encryptCore())
+		hc.setKey(HandyCipher::generateKey());
+	cout << hc.getKey() << endl;
+	hc.printKeyMatrix();
+	hc.print_char_position_mapping();
+	cout <<endl;
+	cout << hc.get_cipher() << endl;
+	*/
 }
 
 void test() {
 	HandyCipher hc{};
-	string tmpkey = "T?2IODWB4ZC,SM5LF.XPU9ARH8K -0NG376VQ1YJE";//HandyCipher::generateKey();
+	//string tmpkey = "T?2IODWB4ZC,SM5LF.XPU9ARH8K -0NG376VQ1YJE";//HandyCipher::generateKey();
 	//cout << tmpkey << endl;
-	hc.setKey(tmpkey);
+	//hc.setKey(tmpkey);
 	//hc.print_key_analyze();
 	//hc.printKeyMatrix();
 	//hc.printLines();
@@ -60,44 +74,19 @@ void test() {
 
 
 	//cout << endl;
-	hc.setKey("ON2TP3FLDSMKY,5ACVER7WIH41UG8.960 ?-ZXQJB");
+	//hc.setKey("ON2TP3FLDSMKY,5ACVER7WIH41UG8.960 ?-ZXQJB");
 	//hc.printKeyMatrix();
 	//hc.printLines();
-	hc.setCipher("Z0XSNDPR?EM-OXE8DOM1?PNZ7YZ8-G0ENUZ7TO2D1ZSCRKZPG8-VP?0S21-TDKNK?72DO148ON0?MD0NMGY1M2DP10PCRNKYN80USO78PMN24NXOUYR814E1XD8DNKT0-SYD8?X-84UG7RX0ZGX1?MY1?NKUMXGRGO0D8U0TM2K?MZXCSZ107OP?D7GPGM?107P0?EKP102OP?28TZK8VDZNMTUXK-RGPVOSP?VNTYDS4OCGY7PS2YOZUPG4PG-0ZXUTYMTECX14-0U2-O?T8XTPMY?RY2S?0KP10E?VNYD1R7VYZG81GPRN02M-E41O40DCX7PM2DNY-TDPCV27OSX1M4SNYTMDXDN4E?SNXOZDP4?8G0TCNO82XY7S0?2SZY01ZDVGXRECNZND7SO1PEYKMN8MR2X0ST1CPO8S20R8NUZ41ZDUN8MZXR7Z1D21D?P?4RCM2-8CKENG-TV4ZK8");
+
+
+	//cout << cipher << endl;
+	//hc.setCipher(cipher);
 
 	//cout << hc.get_cipher() << endl;
-	hc.decrypt();
-	cout << hc.get_plain();
+	//hc.decrypt_init();
+	//hc.null_char_remove();
+	//cout << hc.get_cipher() << endl;
+
+	//cout << hc.get_plain();
 }
 
-void brute_force(string char_set){
-	string t = "FOR THE MOST PART, H";
-	string cipher = "42FB,WHZ.XWB,N9YBJ563XUM5HNMWUCHLJCBW,X?YW4MNE4F6,84EMJ85YBHK9B?5JN9UN.ZHEYH?4WK92.JNHYW4Z,FKH29J.MFX?UJ54";
-	HandyCipher hc{};
-	hc.setCipher(cipher);
-	char d = char_set[0];
-	do {
-		hc.setKey(char_set);
-		hc.decrypt();
-		string s = hc.get_plain();
-		if (t == s.substr(0,20)) {cout << "success!: "<< char_set << endl;break;}
-
-	} while(next_permutation(char_set.begin(),char_set.end()) && char_set[0] == d);
-	cout << "NOT FOUND" << endl;
-}
-
-void brute_force_test(){
-	string t = "IT HAUNTS ME, THE PA";
-
-	HandyCipher hc{};
-	hc.setCipher("Z0XSNDPR?EM-OXE8DOM1?PNZ7YZ8-G0ENUZ7TO2D1ZSCRKZPG8-VP?0S21-TDKNK?72DO148ON0?MD0NMGY1M2DP10PCRNKYN80USO78PMN24NXOUYR814E1XD8DNKT0-SYD8?X-84UG7RX0ZGX1?MY1?NKUMXGRGO0D8U0TM2K?MZXCSZ107OP?D7GPGM?107P0?EKP102OP?28TZK8VDZNMTUXK-RGPVOSP?VNTYDS4OCGY7PS2YOZUPG4PG-0ZXUTYMTECX14-0U2-O?T8XTPMY?RY2S?0KP10E?VNYD1R7VYZG81GPRN02M-E41O40DCX7PM2DNY-TDPCV27OSX1M4SNYTMDXDN4E?SNXOZDP4?8G0TCNO82XY7S0?2SZY01ZDVGXRECNZND7SO1PEYKMN8MR2X0ST1CPO8S20R8NUZ41ZDUN8MZXR7Z1D21D?P?4RCM2-8CKENG-TV4ZK8");
-
-	string char_set="ON2TP3FLDSMKY,5ACVER7WIH41UG8.960 ?-ZXQJB";
-
-	do {
-		hc.setKey(char_set);
-		hc.decrypt();
-		string s = hc.get_plain();
-		if (t == s.substr(0,20)) {cout << char_set;break;}
-	} while(next_permutation(char_set.begin(),char_set.end()));
-}
