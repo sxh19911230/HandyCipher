@@ -43,8 +43,9 @@ public:
 	char decryptNextChar(int& current_position, bool& flip);
 
 	//attack
-	bool core_cipher_attack(string plain);
+	int core_cipher_attack(string plain,int);
 	void core_cipher_attack_init(string key);
+	string core_cipher_attack_decrypt(string, string);
 
 	static string generateKey();
 	static void saveKey(string, string ="key.txt");
@@ -74,6 +75,7 @@ private:
 	bool last_char_2_k {false};
 
 	unordered_map<string, char> key_char_mapping[2];
+	unordered_map<char,char> subsitution_mapping;
 public:
 	string lines[20];
 };

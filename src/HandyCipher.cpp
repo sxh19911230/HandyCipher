@@ -354,13 +354,19 @@ bool HandyCipher::decryptCore() {
 	return true;
 }
 
-bool HandyCipher::core_cipher_attack(string plain) {
-	unordered_map<char,char> subsitution_mapping{};
+int HandyCipher::core_cipher_attack(string plain, int max_find) {
+
+	std::transform(plain.begin(),plain.end(),plain.begin(),::toupper);
+
+	subsitution_mapping.clear();
 	int current_position=0;
 	int plain_position=0;
 	bool flip = true;
 	int err = 0;
-	while (current_position < (int)cipher_text.size()) {
+
+	int current = 0;
+	while (current_position < (int)cipher_text.size()  && current < max_find) {
+		++current;
 		//int position2 = current_position;
 		char c= decryptNextChar(current_position,flip);
 		//TODO
@@ -375,7 +381,7 @@ bool HandyCipher::core_cipher_attack(string plain) {
 				//cout << endl << current_position - position2 << endl;
 
 				//break;
-				++err;
+				return -1*current;
 			}
 			} else {
 				subsitution_mapping[c] = plain[plain_position];
@@ -383,15 +389,20 @@ bool HandyCipher::core_cipher_attack(string plain) {
 			++plain_position;
 
 	}
-	current_position=0;
-	flip = true;
-	cout << err << endl;
-	while (current_position < (int)cipher_text.size())
-		cout << subsitution_mapping[decryptNextChar(current_position,flip)];
 
+	return err;
 
-	return true;
+}
 
+string HandyCipher::core_cipher_attack_decrypt(string plain, string key) {
+	int current_position=0;
+	string r{};
+	bool flip = true;
+	while (current_position < (int)cipher_text.size()) {
+		char c =  decryptNextChar(current_position,flip);
+		r.push_back(subsitution_mapping[c] ? subsitution_mapping[c] : '^');
+	}
+	return r;
 }
 
 void HandyCipher::core_cipher_attack_init(string guess_key) {
@@ -469,7 +480,10 @@ void HandyCipher::core_cipher_attack_init(string guess_key) {
 }
 
 char HandyCipher::decryptNextChar(int& current_position, bool& flip) {
-	for (int i = 5; i >0;--i) {
+
+	if (current_position < cipher_text.size()) {
+		for (int i = 5; i >0;--i) {
+
 				string key = cipher_text.substr(current_position,i);
 
 				sort(key.begin(),key.end());
@@ -481,5 +495,6 @@ char HandyCipher::decryptNextChar(int& current_position, bool& flip) {
 
 				}
 			}
+	}
 	return 0;
 }
